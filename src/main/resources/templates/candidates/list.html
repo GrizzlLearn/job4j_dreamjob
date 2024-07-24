@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="container-fluid p-0">
-	<header th:insert="blocks/header :: header"></header>
+	<header th:insert="~{blocks/header :: header}"></header>
 	<div class="container">
 		<div class="row">
 			<table class="table">
@@ -21,20 +21,22 @@
 				<tr>
 					<th scope="col">#</th>
 					<th scope="col">Имя</th>
+					<th scope="col">Описание</th>
 					<th scope="col">Дата создания</th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr th:each="candidate: ${candidates}">
-					<td th:text="${candidate.id}" />
-					<td th:text="${candidate.name}" />
-					<td th:text="${candidate.creationDate}"/>
+					<td th:text="${candidate.id}"></td>
+					<td><a th:text="${candidate.name}" th:href="@{/candidates/{candidateId}(candidateId=${candidate.id})}"></a></td>
+					<td th:text="${candidate.description}"></td>
+					<td th:text="${candidate.creationDate}"></td>
 				</tr>
 				</tbody>
 			</table>
 		</div>
 	</div>
-	<footer th:insert="blocks/footer :: footer"></footer>
+	<footer th:insert="~{blocks/footer :: footer}"></footer>
 </div>
 </body>
 </html>
