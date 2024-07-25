@@ -4,8 +4,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.dreamjob.model.Candidate;
-import ru.job4j.dreamjob.repository.CandidateRepository;
-import ru.job4j.dreamjob.repository.MemoryCandidateRepository;
+import ru.job4j.dreamjob.service.CandidateService;
+import ru.job4j.dreamjob.service.SimpleCandidateService;
+
 import java.util.Optional;
 
 /**
@@ -15,11 +16,11 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/candidates")
 public class CandidateController {
-	public final CandidateRepository candidateRepository = MemoryCandidateRepository.getInstance();
+	public final CandidateService candidateService = SimpleCandidateService.getInstance();
 
 	@GetMapping
 	public String getCandidates(Model model) {
-		model.addAttribute("candidates", candidateRepository.findAll());
+		model.addAttribute("candidates", candidateService.findAll());
 		return "candidates/list";
 	}
 
@@ -30,13 +31,13 @@ public class CandidateController {
 
 	@PostMapping("/create")
 	public String create(@ModelAttribute Candidate candidate) {
-		candidateRepository.save(candidate);
+		candidateService.save(candidate);
 		return "redirect:/candidates";
 	}
 
 	@GetMapping("/{id}")
 	public String getById(Model model, @PathVariable int id) {
-		Optional<Candidate> candidateOptional = candidateRepository.findById(id);
+		Optional<Candidate> candidateOptional = candidateService.findById(id);
 		if (candidateOptional.isEmpty()) {
 			model.addAttribute("message", "candidate with id " + id + " not found");
 			return "errors/404";
@@ -47,7 +48,7 @@ public class CandidateController {
 
 	@PostMapping("/update")
 	public String update(@ModelAttribute Candidate candidate, Model model) {
-		boolean isUpdated = candidateRepository.update(candidate);
+		boolean isUpdated = candidateService.update(candidate);
 		if (!isUpdated) {
 			model.addAttribute("message", "Candidate with id " + candidate.getId() + " not found");
 			return "errors/404";
@@ -57,7 +58,7 @@ public class CandidateController {
 
 	@GetMapping("/delete/{id}")
 	public String delete(Model model, @PathVariable int id) {
-		Optional<Candidate> idDeleted = candidateRepository.deleteById(id);
+		Optional<Candidate> idDeleted = candidateService.deleteById(id);
 		if (idDeleted.isEmpty()) {
 			model.addAttribute("message", "candidate with id " + id + " not found");
 			return "errors/404";

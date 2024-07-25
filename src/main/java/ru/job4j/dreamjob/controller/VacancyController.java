@@ -4,8 +4,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.dreamjob.model.Vacancy;
-import ru.job4j.dreamjob.repository.MemoryVacancyRepository;
-import ru.job4j.dreamjob.repository.VacancyRepository;
+import ru.job4j.dreamjob.service.SimpleVacancyService;
+import ru.job4j.dreamjob.service.VacancyService;
+
 import java.util.Optional;
 
 /**
@@ -15,11 +16,11 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/vacancies")
 public class VacancyController {
-	public final VacancyRepository vacancyRepository = MemoryVacancyRepository.getInstance();
+	private final VacancyService vacancyService = SimpleVacancyService.getInstance();
 
 	@GetMapping
 	public String getAll(Model model) {
-		model.addAttribute("vacancies", vacancyRepository.findAll());
+		model.addAttribute("vacancies", vacancyService.findAll());
 		return "vacancies/list";
 	}
 
@@ -30,13 +31,13 @@ public class VacancyController {
 
 	@PostMapping("/create")
 	public String create(@ModelAttribute Vacancy vacancy) {
-		vacancyRepository.save(vacancy);
+		vacancyService.save(vacancy);
 		return "redirect:/vacancies";
 	}
 
 	@GetMapping("/{id}")
 	public String getById(Model model, @PathVariable int id) {
-		Optional<Vacancy> vacancyOptional = vacancyRepository.findById(id);
+		Optional<Vacancy> vacancyOptional = vacancyService.findById(id);
 		if (vacancyOptional.isEmpty()) {
 			model.addAttribute("message", "Vacancy with id " + id + " not found");
 			return "errors/404";
@@ -47,7 +48,7 @@ public class VacancyController {
 
 	@PostMapping("/update")
 	public String update(@ModelAttribute Vacancy vacancy, Model model) {
-		boolean isUpdated = vacancyRepository.update(vacancy);
+		boolean isUpdated = vacancyService.update(vacancy);
 		if (!isUpdated) {
 			model.addAttribute("message", "Vacancy with id " + vacancy.getId() + " not found");
 			return "errors/404";
@@ -57,7 +58,7 @@ public class VacancyController {
 
 	@GetMapping("/delete/{id}")
 	public String delete(Model model, @PathVariable int id) {
-		Optional<Vacancy> isDeleted = vacancyRepository.deleteById(id);
+		Optional<Vacancy> isDeleted = vacancyService.deleteById(id);
 		if (isDeleted.isEmpty()) {
 			model.addAttribute("message", "Vacancy with id " + id + " not found");
 			return "errors/404";
