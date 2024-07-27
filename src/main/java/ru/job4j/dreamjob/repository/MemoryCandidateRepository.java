@@ -82,10 +82,7 @@ public class MemoryCandidateRepository implements CandidateRepository {
 
 	@Override
 	public Optional<Candidate> findById(int id) {
-		AtomicReference<Candidate> candidateAtomicReference = candidates.get(id);
-		return candidateAtomicReference != null
-				? Optional.ofNullable(candidateAtomicReference.get())
-				: Optional.empty();
+		return Optional.ofNullable(candidates.get(id)).map(AtomicReference::get);
 	}
 
 	@Override
