@@ -1,23 +1,28 @@
 package ru.job4j.dreamjob.repository;
 
+import net.jcip.annotations.ThreadSafe;
 import org.springframework.stereotype.Repository;
 import ru.job4j.dreamjob.model.Candidate;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author dl
  * @date 22.07.2024 23:52
  */
+@ThreadSafe
 @Repository
 public class MemoryCandidateRepository implements CandidateRepository {
 
-	private int nextId = 1;
+	private final AtomicInteger nextId = new AtomicInteger(0);
 
-	private final Map<Integer, Candidate> candidates = new HashMap<>();
+	private final Map<Integer, AtomicReference<Candidate>> candidates = new ConcurrentHashMap<>();
 
 	private MemoryCandidateRepository() {
 		save(new Candidate(0, "Candidate_1", "description_1", LocalDateTime.now()));
@@ -30,32 +35,63 @@ public class MemoryCandidateRepository implements CandidateRepository {
 
 	@Override
 	public Candidate save(Candidate candidate) {
-		candidate.setId(nextId++);
-		candidates.put(candidate.getId(), candidate);
+		candidate.setId(nextId.incrementAndGet());
+		candidates.put(candidate.getId(), new AtomicReference<>(candidate));
 		return candidate;
 	}
 
 	@Override
 	public Optional<Candidate> deleteById(int id) {
-		return Optional.ofNullable(candidates.remove(id));
+		AtomicReference<Candidate> oldRef = candidates.get(id);
+		if (oldRef == null) {
+			return Optional.empty();
+		}
+
+		while (true) {
+			Candidate oldCandidate = oldRef.get();
+			if (oldCandidate == null) {
+				return Optional.empty();
+			}
+			if (oldRef.compareAndSet(oldCandidate, null)) {
+				candidates.remove(id);
+				return Optional.of(oldCandidate);
+			}
+		}
 	}
 
 	@Override
 	public boolean update(Candidate candidate) {
-		return candidates.computeIfPresent(candidate.getId(),
-				(id, oldCandidate) -> new Candidate(oldCandidate.getId(),
-						candidate.getName(),
-						candidate.getDescription(),
-						candidate.getCreationDate())) != null;
+		Optional<AtomicReference<Candidate>> oldCandidateAtomicReferenceExist = Optional.ofNullable(candidates.get(candidate.getId()));
+		if (oldCandidateAtomicReferenceExist.isEmpty()) {
+			return false;
+		}
+		while (true) {
+			Optional<Candidate> oldCandidateExist = Optional.ofNullable(oldCandidateAtomicReferenceExist.get().get());
+			if (oldCandidateExist.isEmpty()) {
+				return false;
+			}
+			Candidate updatedCandidate = new Candidate(oldCandidateExist.get().getId(),
+					candidate.getName(),
+					candidate.getDescription(),
+					candidate.getCreationDate());
+			if (oldCandidateAtomicReferenceExist.get().compareAndSet(oldCandidateExist.get(), updatedCandidate)) {
+				return true;
+			}
+		}
 	}
 
 	@Override
 	public Optional<Candidate> findById(int id) {
-		return Optional.ofNullable(candidates.get(id));
+		AtomicReference<Candidate> candidateAtomicReference = candidates.get(id);
+		return candidateAtomicReference != null
+				? Optional.ofNullable(candidateAtomicReference.get())
+				: Optional.empty();
 	}
 
 	@Override
 	public Collection<Candidate> findAll() {
-		return candidates.values();
+		return candidates.values().stream()
+				.map(AtomicReference::get)
+				.collect(Collectors.toList());
 	}
 }
