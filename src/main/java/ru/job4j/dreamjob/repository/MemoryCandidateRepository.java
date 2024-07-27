@@ -61,31 +61,31 @@ public class MemoryCandidateRepository implements CandidateRepository {
 
 	@Override
 	public boolean update(Candidate candidate) {
-		return Optional.ofNullable(candidates.get(candidate.getId()))
-				.flatMap(oldRef -> {
-					while (true) {
-						Candidate oldCandidate = oldRef.get();
-						if (oldCandidate == null) {
-							return Optional.empty();
-						}
-						Candidate updatedCandidate = new Candidate(
-								oldCandidate.getId(),
-								candidate.getName(),
-								candidate.getDescription(),
-								candidate.getCreationDate()
-						);
-						if (oldRef.compareAndSet(oldCandidate, updatedCandidate)) {
-							return Optional.of(updatedCandidate);
-						}
-					}
-				})
-				.isPresent();
+		Optional<AtomicReference<Candidate>> oldCandidateAtomicReferenceExist = Optional.ofNullable(candidates.get(candidate.getId()));
+		if (oldCandidateAtomicReferenceExist.isEmpty()) {
+			return false;
+		}
+		while (true) {
+			Optional<Candidate> oldCandidateExist = Optional.ofNullable(oldCandidateAtomicReferenceExist.get().get());
+			if (oldCandidateExist.isEmpty()) {
+				return false;
+			}
+			Candidate updatedCandidate = new Candidate(oldCandidateExist.get().getId(),
+					candidate.getName(),
+					candidate.getDescription(),
+					candidate.getCreationDate());
+			if (oldCandidateAtomicReferenceExist.get().compareAndSet(oldCandidateExist.get(), updatedCandidate)) {
+				return true;
+			}
+		}
 	}
 
 	@Override
 	public Optional<Candidate> findById(int id) {
-		return Optional.ofNullable(candidates.get(id))
-				.map(AtomicReference::get);
+		AtomicReference<Candidate> candidateAtomicReference = candidates.get(id);
+		return candidateAtomicReference != null
+				? Optional.ofNullable(candidateAtomicReference.get())
+				: Optional.empty();
 	}
 
 	@Override
