@@ -23,12 +23,12 @@ public class MemoryCandidateRepository implements CandidateRepository {
 	private final Map<Integer, Candidate> candidates = new ConcurrentHashMap<>();
 
 	private MemoryCandidateRepository() {
-		save(new Candidate(0, "Candidate_1", "description_1", LocalDateTime.now()));
-		save(new Candidate(0, "Candidate_2", "description_2", LocalDateTime.now()));
-		save(new Candidate(0, "Candidate_3", "description_3", LocalDateTime.now()));
-		save(new Candidate(0, "Candidate_4", "description_4", LocalDateTime.now()));
-		save(new Candidate(0, "Candidate_5", "description_5", LocalDateTime.now()));
-		save(new Candidate(0, "Candidate_6", "description_6", LocalDateTime.now()));
+		save(new Candidate(0, "Candidate_1", "description_1", LocalDateTime.now(), 1));
+		save(new Candidate(0, "Candidate_2", "description_2", LocalDateTime.now(), 2));
+		save(new Candidate(0, "Candidate_3", "description_3", LocalDateTime.now(), 3));
+		save(new Candidate(0, "Candidate_4", "description_4", LocalDateTime.now(), 1));
+		save(new Candidate(0, "Candidate_5", "description_5", LocalDateTime.now(), 3));
+		save(new Candidate(0, "Candidate_6", "description_6", LocalDateTime.now(), 2));
 	}
 
 	@Override
@@ -49,7 +49,8 @@ public class MemoryCandidateRepository implements CandidateRepository {
 				(id, oldCandidate) -> new Candidate(oldCandidate.getId(),
 						candidate.getName(),
 						candidate.getDescription(),
-						candidate.getCreationDate())) != null;
+						candidate.getCreationDate(),
+						candidate.getCityId())) != null;
 	}
 
 	@Override
