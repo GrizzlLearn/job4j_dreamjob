@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * @author dl
@@ -22,7 +20,7 @@ public class MemoryCandidateRepository implements CandidateRepository {
 
 	private final AtomicInteger nextId = new AtomicInteger(0);
 
-	private final Map<Integer, AtomicReference<Candidate>> candidates = new ConcurrentHashMap<>();
+	private final Map<Integer, Candidate> candidates = new ConcurrentHashMap<>();
 
 	private MemoryCandidateRepository() {
 		save(new Candidate(0, "Candidate_1", "description_1", LocalDateTime.now()));
@@ -36,59 +34,31 @@ public class MemoryCandidateRepository implements CandidateRepository {
 	@Override
 	public Candidate save(Candidate candidate) {
 		candidate.setId(nextId.incrementAndGet());
-		candidates.put(candidate.getId(), new AtomicReference<>(candidate));
+		candidates.put(candidate.getId(), candidate);
 		return candidate;
 	}
 
 	@Override
 	public Optional<Candidate> deleteById(int id) {
-		AtomicReference<Candidate> oldRef = candidates.get(id);
-		if (oldRef == null) {
-			return Optional.empty();
-		}
-
-		while (true) {
-			Candidate oldCandidate = oldRef.get();
-			if (oldCandidate == null) {
-				return Optional.empty();
-			}
-			if (oldRef.compareAndSet(oldCandidate, null)) {
-				candidates.remove(id);
-				return Optional.of(oldCandidate);
-			}
-		}
+		return Optional.ofNullable(candidates.get(id));
 	}
 
 	@Override
 	public boolean update(Candidate candidate) {
-		Optional<AtomicReference<Candidate>> oldCandidateAtomicReferenceExist = Optional.ofNullable(candidates.get(candidate.getId()));
-		if (oldCandidateAtomicReferenceExist.isEmpty()) {
-			return false;
-		}
-		while (true) {
-			Optional<Candidate> oldCandidateExist = Optional.ofNullable(oldCandidateAtomicReferenceExist.get().get());
-			if (oldCandidateExist.isEmpty()) {
-				return false;
-			}
-			Candidate updatedCandidate = new Candidate(oldCandidateExist.get().getId(),
-					candidate.getName(),
-					candidate.getDescription(),
-					candidate.getCreationDate());
-			if (oldCandidateAtomicReferenceExist.get().compareAndSet(oldCandidateExist.get(), updatedCandidate)) {
-				return true;
-			}
-		}
+		return candidates.computeIfPresent(candidate.getId(),
+				(id, oldCandidate) -> new Candidate(oldCandidate.getId(),
+						candidate.getName(),
+						candidate.getDescription(),
+						candidate.getCreationDate())) != null;
 	}
 
 	@Override
 	public Optional<Candidate> findById(int id) {
-		return Optional.ofNullable(candidates.get(id)).map(AtomicReference::get);
+		return Optional.ofNullable(candidates.get(id));
 	}
 
 	@Override
 	public Collection<Candidate> findAll() {
-		return candidates.values().stream()
-				.map(AtomicReference::get)
-				.collect(Collectors.toList());
+		return candidates.values();
 	}
 }
