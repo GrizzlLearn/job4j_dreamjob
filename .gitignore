@@ -3,6 +3,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 /files
+/postgres-data
 
 ### IntelliJ IDEA ###
 .idea/
