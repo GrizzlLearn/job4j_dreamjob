@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 /files
 /postgres-data
+/pgadmin-data
 
 ### IntelliJ IDEA ###
 .idea/
