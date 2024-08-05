@@ -13,5 +13,5 @@ public interface FileRepository {
 
 	Optional<File> findById(int id);
 
-	void deleteById(int id);
+	boolean deleteById(int id);
 }

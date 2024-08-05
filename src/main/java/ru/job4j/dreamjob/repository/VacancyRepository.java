@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface VacancyRepository {
 	Vacancy save(Vacancy vacancy);
 
-	Optional<Vacancy> deleteById(int id);
+	boolean deleteById(int id);
 
 	boolean update(Vacancy vacancy);
 

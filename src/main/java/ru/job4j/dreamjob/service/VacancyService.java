@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface VacancyService {
 	Vacancy save(Vacancy vacancy, FileDto fileDto);
 
-	Optional<Vacancy> deleteById(int id);
+	boolean deleteById(int id);
 
 	boolean update(Vacancy vacancy, FileDto fileDto);
 

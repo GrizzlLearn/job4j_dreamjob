@@ -80,8 +80,8 @@ public class VacancyController {
 
 	@GetMapping("/delete/{id}")
 	public String delete(Model model, @PathVariable int id) {
-		Optional<Vacancy> isDeleted = vacancyService.deleteById(id);
-		if (isDeleted.isEmpty()) {
+		boolean isDeleted = vacancyService.deleteById(id);
+		if (!isDeleted) {
 			model.addAttribute("message", "Vacancy with id " + id + " not found");
 			return "errors/404";
 		}

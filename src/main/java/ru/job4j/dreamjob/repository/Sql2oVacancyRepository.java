@@ -41,13 +41,11 @@ public class Sql2oVacancyRepository implements VacancyRepository {
 	}
 
 	@Override
-	public Optional<Vacancy> deleteById(int id) {
+	public boolean deleteById(int id) {
 		try (var connection = sql2o.open()) {
-			var query = connection.createQuery("SELECT * FROM vacancies WHERE id = :id");
-			var vacancy = query
-					.setColumnMappings(Vacancy.COLUMN_MAPPING)
-					.executeAndFetchFirst(Vacancy.class);
-			return Optional.ofNullable(vacancy);
+			var query = connection.createQuery("DELETE FROM vacancies WHERE id = :id");
+			var affectedRows = query.addParameter("id", id).executeUpdate().getResult();
+			return affectedRows > 0;
 		}
 	}
 

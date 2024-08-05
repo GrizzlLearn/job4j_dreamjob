@@ -40,14 +40,12 @@ public class Sql2oCandidateRepository implements CandidateRepository {
 	}
 
 	@Override
-	public Optional<Candidate> deleteById(int id) {
+	public boolean deleteById(int id) {
 		try (var connection = sql2o.open()) {
-			String sql = "SELECT * FROM candidates WHERE id = :id";
+			String sql = "DELETE FROM candidates WHERE id = :id";
 			var query = connection.createQuery(sql);
-			var candidate = query
-					.setColumnMappings(Candidate.COLUMN_MAPPING)
-					.executeAndFetchFirst(Candidate.class);
-			return Optional.ofNullable(candidate);
+			var affectedRows = query.addParameter("id", id).executeUpdate().getResult();
+			return affectedRows > 0;
 		}
 	}
 

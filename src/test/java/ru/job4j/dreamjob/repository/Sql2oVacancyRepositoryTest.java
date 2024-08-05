@@ -47,7 +47,9 @@ public class Sql2oVacancyRepositoryTest {
 		sql2oFileRepository = new Sql2oFileRepository(sql2o);
 
 		file = new File("test", "test");
+		/*
 		sql2oFileRepository.save(file);
+		*/
 	}
 
 	@AfterAll
@@ -81,11 +83,11 @@ public class Sql2oVacancyRepositoryTest {
 		assertThat(result).isEqualTo(List.of(vacancy1, vacancy2, vacancy3));
 	}*/
 
-	/*@Test
+	@Test
 	public void whenDontSaveThenNothingFound() {
 		assertThat(sql2oVacancyRepository.findAll()).isEqualTo(emptyList());
 		assertThat(sql2oVacancyRepository.findById(0)).isEqualTo(empty());
-	}*/
+	}
 
 	/*@Test
 	public void whenDeleteThenGetEmptyOptional() {

@@ -14,5 +14,5 @@ public interface FileService {
 
 	Optional<FileDto> getFileId(int id);
 
-	void deleteBiId(int id);
+	boolean deleteBiId(int id);
 }
