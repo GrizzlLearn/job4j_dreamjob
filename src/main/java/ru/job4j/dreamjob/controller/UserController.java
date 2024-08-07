@@ -1,5 +1,7 @@
 package ru.job4j.dreamjob.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -37,17 +39,25 @@ public class UserController {
 	}
 
 	@GetMapping("/login")
-	public String getLoginPage() {
+	public String getLoginPage(@ModelAttribute User user, HttpServletRequest request) {
+		Optional<User> userOptional = userService.findByEmailAndPassword(user.getEmail(), user.getPassword());
+		if (userOptional.isEmpty()) {
+			return "users/login";
+		}
+		HttpSession session = request.getSession();
+		session.setAttribute("user", userOptional.get());
 		return "users/login";
 	}
 
 	@PostMapping("/login")
-	public String loginUser(@ModelAttribute User user, Model model) {
+	public String loginUser(@ModelAttribute User user, Model model, HttpServletRequest request) {
 		Optional<User> userOptional = userService.findByEmailAndPassword(user.getEmail(), user.getPassword());
 		if (userOptional.isEmpty()) {
 			model.addAttribute("error", "Почта или пароль введены неверно");
 			return "users/login";
 		}
+		HttpSession session = request.getSession();
+		session.setAttribute("user", userOptional.get());
 		return "redirect:/vacancies";
 	}
 }
