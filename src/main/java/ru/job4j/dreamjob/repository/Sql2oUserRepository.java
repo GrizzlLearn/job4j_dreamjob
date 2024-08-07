@@ -6,6 +6,8 @@ import ru.job4j.dreamjob.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,6 +50,23 @@ public class Sql2oUserRepository implements UserRepository {
 		try (var connection = sql2o.open()) {
 			String sql = "SELECT * FROM users WHERE email = :email AND password = :password";
 			return Optional.ofNullable(connection.createQuery(sql).executeAndFetchFirst(User.class));
+		}
+	}
+
+	public Collection<User> getAllUsers() {
+		try (var connection = sql2o.open()) {
+			String sql = "SELECT * FROM users";
+			var query = connection.createQuery(sql);
+			return query.setColumnMappings(User.COLUMN_MAPPING).executeAndFetch(User.class);
+		}
+	}
+
+	public boolean deleteAll() {
+		try (var connection = sql2o.open()) {
+			String sql = "DELETE FROM users";
+			var query = connection.createQuery(sql);
+			var affectedRows = query.executeUpdate().getResult();
+			return affectedRows > 0;
 		}
 	}
 }
