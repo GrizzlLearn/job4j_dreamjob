@@ -49,7 +49,10 @@ public class Sql2oUserRepository implements UserRepository {
 	public Optional<User> findByEmailAndPassword(String email, String password) {
 		try (var connection = sql2o.open()) {
 			String sql = "SELECT * FROM users WHERE email = :email AND password = :password";
-			return Optional.ofNullable(connection.createQuery(sql).executeAndFetchFirst(User.class));
+			var querry = connection.createQuery(sql)
+					.addParameter("email", email)
+					.addParameter("password", password);
+			return Optional.ofNullable(querry.executeAndFetchFirst(User.class));
 		}
 	}
 
