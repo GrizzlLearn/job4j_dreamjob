@@ -9,7 +9,6 @@ import ru.job4j.dreamjob.model.Vacancy;
 import ru.job4j.dreamjob.service.CityService;
 import ru.job4j.dreamjob.service.VacancyService;
 
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -41,7 +40,7 @@ public class VacancyController {
 	}
 
 	@PostMapping("/create")
-	public String create(@ModelAttribute Vacancy vacancy, @RequestParam MultipartFile file, Model model) {
+	public String create(Model model, @ModelAttribute Vacancy vacancy, @RequestParam MultipartFile file) {
 		try {
 			vacancyService.save(vacancy, new FileDto(file.getOriginalFilename(), file.getBytes()));
 			return "redirect:/vacancies";
@@ -64,7 +63,7 @@ public class VacancyController {
 	}
 
 	@PostMapping("/update")
-	public String update(@ModelAttribute Vacancy vacancy, @RequestParam MultipartFile file, Model model) {
+	public String update(Model model, @ModelAttribute Vacancy vacancy, @RequestParam MultipartFile file) {
 		try {
 			boolean isUpdated = vacancyService.update(vacancy, new FileDto(file.getOriginalFilename(), file.getBytes()));
 			if (!isUpdated) {
